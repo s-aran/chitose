@@ -167,7 +167,7 @@ pub fn add(left: u64, right: u64) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     static BASE_URL: &str = "https://httpbin.org";
 
     #[test]
