@@ -167,10 +167,87 @@ pub fn add(left: u64, right: u64) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    
+    static BASE_URL: &str = "https://httpbin.org";
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn test_http_get() {
+        let url = format!("{BASE_URL}/get");
+        let cookie = "";
+        let headers = HashMap::new();
+        let data = "";
+
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let response = rt.block_on(async { http_get(url.as_str(), cookie, headers, data).await });
+
+        println!("{}", response);
+        let data: HashMap<String, serde_json::Value> = serde_json::from_str(&response).unwrap();
+
+        assert!(data.contains_key("args"));
+        assert_eq!(0, data["args"].as_object().unwrap().len());
+
+        assert!(data.contains_key("headers"));
+        assert_eq!(4, data["headers"].as_object().unwrap().len());
+    }
+
+    #[test]
+    fn test_http_post() {
+        let url = format!("{BASE_URL}/post");
+        let cookie = "";
+        let headers = HashMap::new();
+        let data = "";
+
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let response = rt.block_on(async { http_post(url.as_str(), cookie, headers, data).await });
+
+        println!("{}", response);
+        let data: HashMap<String, serde_json::Value> = serde_json::from_str(&response).unwrap();
+
+        assert!(data.contains_key("args"));
+        assert_eq!(0, data["args"].as_object().unwrap().len());
+
+        assert!(data.contains_key("headers"));
+        assert_eq!(4, data["headers"].as_object().unwrap().len());
+    }
+
+    #[test]
+    fn test_http_put() {
+        let url = format!("{BASE_URL}/put");
+        let cookie = "";
+        let headers = HashMap::new();
+        let data = "";
+
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let response = rt.block_on(async { http_put(url.as_str(), cookie, headers, data).await });
+
+        println!("{}", response);
+        let data: HashMap<String, serde_json::Value> = serde_json::from_str(&response).unwrap();
+
+        assert!(data.contains_key("args"));
+        assert_eq!(0, data["args"].as_object().unwrap().len());
+
+        assert!(data.contains_key("headers"));
+        assert_eq!(4, data["headers"].as_object().unwrap().len());
+    }
+
+    #[test]
+    fn test_http_delete() {
+        let url = format!("{BASE_URL}/delete");
+        let cookie = "";
+        let headers = HashMap::new();
+        let data = "";
+
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        let response =
+            rt.block_on(async { http_delete(url.as_str(), cookie, headers, data).await });
+
+        println!("{}", response);
+        let data: HashMap<String, serde_json::Value> = serde_json::from_str(&response).unwrap();
+
+        assert!(data.contains_key("args"));
+        assert_eq!(0, data["args"].as_object().unwrap().len());
+
+        assert!(data.contains_key("headers"));
+        assert_eq!(4, data["headers"].as_object().unwrap().len());
     }
 }
