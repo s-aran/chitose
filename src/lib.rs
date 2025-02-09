@@ -73,13 +73,22 @@ async fn receive_response(
     response
 }
 
-pub async fn http_get(
+#[derive(Debug)]
+enum HttpMethod {
+    GET,
+    POST,
+    PUT,
+    DELETE,
+}
+
+async fn _http_request(
+    method: HttpMethod,
     url_str: &str,
     cookie_str: &str,
     headers: HashMap<&str, &str>,
     data_str: &str,
 ) -> String {
-    dbg!("GET");
+    dbg!(format!("method: {:?}", method));
     dbg!(format!("url: {}", url_str));
     dbg!(format!("cookie: {}", cookie_str));
     dbg!(format!("header: {:?}", &headers));
@@ -91,7 +100,12 @@ pub async fn http_get(
     let default_headers: HeaderMap = HeaderMap::new();
     let client: Client = make_client(default_headers, cookies);
 
-    let request_builder: RequestBuilder = client.get(url);
+    let request_builder: RequestBuilder = match method {
+        HttpMethod::GET => client.get(url),
+        HttpMethod::POST => client.post(url),
+        HttpMethod::PUT => client.put(url),
+        HttpMethod::DELETE => client.delete(url),
+    };
 
     let onetime_headers: HeaderMap = make_default_header(headers);
     let mut response = receive_response(request_builder, onetime_headers, data_str).await;
@@ -107,9 +121,16 @@ pub async fn http_get(
         _ => response.text().await.unwrap(),
     };
 
-    println!("{}", res_str);
-
     res_str
+}
+
+pub async fn http_get(
+    url_str: &str,
+    cookie_str: &str,
+    headers: HashMap<&str, &str>,
+    data_str: &str,
+) -> String {
+    _http_request(HttpMethod::GET, url_str, cookie_str, headers, data_str).await
 }
 
 pub async fn http_post(
@@ -118,37 +139,7 @@ pub async fn http_post(
     headers: HashMap<&str, &str>,
     data_str: &str,
 ) -> String {
-    dbg!("POST");
-    dbg!(format!("url: {}", url_str));
-    dbg!(format!("cookie: {}", cookie_str));
-    dbg!(format!("header: {:?}", &headers));
-    dbg!(format!("data: {}", data_str));
-
-    let url = make_url(url_str);
-    let cookies = make_cookie(cookie_str, &url);
-
-    let default_headers: HeaderMap = HeaderMap::new();
-    let client: Client = make_client(default_headers, cookies);
-
-    let request_builder: RequestBuilder = client.post(url);
-
-    let onetime_headers: HeaderMap = make_default_header(headers);
-    let mut response = receive_response(request_builder, onetime_headers, data_str).await;
-
-    let res_str = match response.headers().get(header::TRANSFER_ENCODING) {
-        Some(v) if v == "chunked" => {
-            let mut raw_res = Vec::new();
-            while let Some(chunk) = response.chunk().await.unwrap() {
-                chunk.to_vec().into_iter().for_each(|x| raw_res.push(x));
-            }
-            String::from_utf8(raw_res).unwrap()
-        }
-        _ => response.text().await.unwrap(),
-    };
-
-    println!("{}", res_str);
-
-    res_str
+    _http_request(HttpMethod::POST, url_str, cookie_str, headers, data_str).await
 }
 
 pub async fn http_put(
@@ -157,37 +148,7 @@ pub async fn http_put(
     headers: HashMap<&str, &str>,
     data_str: &str,
 ) -> String {
-    dbg!("PUT");
-    dbg!(format!("url: {}", url_str));
-    dbg!(format!("cookie: {}", cookie_str));
-    dbg!(format!("header: {:?}", &headers));
-    dbg!(format!("data: {}", data_str));
-
-    let url = make_url(url_str);
-    let cookies = make_cookie(cookie_str, &url);
-
-    let default_headers: HeaderMap = HeaderMap::new();
-    let client: Client = make_client(default_headers, cookies);
-
-    let request_builder: RequestBuilder = client.put(url);
-
-    let onetime_headers: HeaderMap = make_default_header(headers);
-    let mut response = receive_response(request_builder, onetime_headers, data_str).await;
-
-    let res_str = match response.headers().get(header::TRANSFER_ENCODING) {
-        Some(v) if v == "chunked" => {
-            let mut raw_res = Vec::new();
-            while let Some(chunk) = response.chunk().await.unwrap() {
-                chunk.to_vec().into_iter().for_each(|x| raw_res.push(x));
-            }
-            String::from_utf8(raw_res).unwrap()
-        }
-        _ => response.text().await.unwrap(),
-    };
-
-    println!("{}", res_str);
-
-    res_str
+    _http_request(HttpMethod::PUT, url_str, cookie_str, headers, data_str).await
 }
 
 pub async fn http_delete(
@@ -196,37 +157,7 @@ pub async fn http_delete(
     headers: HashMap<&str, &str>,
     data_str: &str,
 ) -> String {
-    dbg!("DELETE");
-    dbg!(format!("url: {}", url_str));
-    dbg!(format!("cookie: {}", cookie_str));
-    dbg!(format!("header: {:?}", &headers));
-    dbg!(format!("data: {}", data_str));
-
-    let url = make_url(url_str);
-    let cookies = make_cookie(cookie_str, &url);
-
-    let default_headers: HeaderMap = HeaderMap::new();
-    let client: Client = make_client(default_headers, cookies);
-
-    let request_builder: RequestBuilder = client.delete(url);
-
-    let onetime_headers: HeaderMap = make_default_header(headers);
-    let mut response = receive_response(request_builder, onetime_headers, data_str).await;
-
-    let res_str = match response.headers().get(header::TRANSFER_ENCODING) {
-        Some(v) if v == "chunked" => {
-            let mut raw_res = Vec::new();
-            while let Some(chunk) = response.chunk().await.unwrap() {
-                chunk.to_vec().into_iter().for_each(|x| raw_res.push(x));
-            }
-            String::from_utf8(raw_res).unwrap()
-        }
-        _ => response.text().await.unwrap(),
-    };
-
-    println!("{}", res_str);
-
-    res_str
+    _http_request(HttpMethod::DELETE, url_str, cookie_str, headers, data_str).await
 }
 
 pub fn add(left: u64, right: u64) -> u64 {
