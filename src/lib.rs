@@ -1,3 +1,9 @@
+mod ezkv;
+mod method;
+mod newlib;
+
+use crate::method::HttpMethod;
+
 use reqwest::cookie::Jar;
 use reqwest::header;
 use reqwest::header::HeaderMap;
@@ -45,10 +51,9 @@ fn make_default_header(headers: HashMap<&str, &str>) -> HeaderMap {
     default_headers
 }
 
-fn make_client(default_headers: HeaderMap, cookies: Arc<Jar>) -> Client {
+fn make_client(cookies: Arc<Jar>) -> Client {
     let client_builder: ClientBuilder = Client::builder();
     let client: Client = client_builder
-        // .default_headers(default_headers)
         .cookie_provider(cookies)
         .timeout(Duration::from_secs(30))
         .build()
@@ -73,14 +78,6 @@ async fn receive_response(
     response
 }
 
-#[derive(Debug)]
-enum HttpMethod {
-    GET,
-    POST,
-    PUT,
-    DELETE,
-}
-
 async fn _http_request(
     method: HttpMethod,
     url_str: &str,
@@ -97,8 +94,7 @@ async fn _http_request(
     let url = make_url(url_str);
     let cookies = make_cookie(cookie_str, &url);
 
-    let default_headers: HeaderMap = HeaderMap::new();
-    let client: Client = make_client(default_headers, cookies);
+    let client: Client = make_client(cookies);
 
     let request_builder: RequestBuilder = match method {
         HttpMethod::GET => client.get(url),
@@ -158,10 +154,6 @@ pub async fn http_delete(
     data_str: &str,
 ) -> String {
     _http_request(HttpMethod::DELETE, url_str, cookie_str, headers, data_str).await
-}
-
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
 }
 
 #[cfg(test)]
