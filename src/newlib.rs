@@ -87,8 +87,8 @@ impl Chitose {
             HttpMethod::DELETE => client.delete(url),
         };
 
-        let onetime_headers: HeaderMap = make_default_header(headers);
-        let mut response = receive_response(request_builder, onetime_headers, data_str).await;
+        let onetime_headers: HeaderMap = Self::make_default_header(headers);
+        let mut response = Self::receive_response(request_builder, onetime_headers, data_str).await;
 
         let res_str = match response.headers().get(header::TRANSFER_ENCODING) {
             Some(v) if v == "chunked" => {
