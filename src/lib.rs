@@ -401,4 +401,37 @@ mod tests {
 
         assert_eq!(2, args.len());
     }
+
+    #[test]
+    fn test_sync_http_post_with_param() {
+        let url = format!("{BASE_URL}/post");
+        let cookie = "";
+        let headers = HashMap::new();
+        let data = r#"{
+            "foo": "bar",
+            "hoge": "piyo"
+        }"#;
+
+        let response = sync_http_post(url.as_str(), cookie, headers, data);
+        let data: HashMap<String, serde_json::Value> = serde_json::from_str(&response).unwrap();
+
+        println!("{}", response);
+
+        assert!(data.contains_key("args"));
+        assert_eq!(0, data["args"].as_object().unwrap().len());
+
+        assert!(data.contains_key("headers"));
+        assert_eq!(5, data["headers"].as_object().unwrap().len());
+
+        assert!(data.contains_key("json"));
+        let json = data["json"].as_object().unwrap();
+
+        assert!(json.contains_key("foo"));
+        assert_eq!("bar", json["foo"].as_str().unwrap());
+
+        assert!(json.contains_key("hoge"));
+        assert_eq!("piyo", json["hoge"].as_str().unwrap());
+
+        assert_eq!(2, json.len());
+    }
 }
