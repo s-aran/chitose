@@ -1,5 +1,5 @@
 // mod ezkv;
-mod method;
+pub mod method;
 // mod newlib;
 
 use crate::method::HttpMethod;
